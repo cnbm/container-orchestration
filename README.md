@@ -25,6 +25,11 @@ For each run, the following dimensions can be considered:
   - nodes
   - network
 
+## Dependencies
+
+- [Cobra](https://github.com/spf13/cobra)
+- add here ...
+
 ## Related Work
 
 - [C4-bench](https://github.com/allingeek/c4-bench)
