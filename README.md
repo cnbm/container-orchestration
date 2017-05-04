@@ -32,6 +32,7 @@ For each run, the following dimensions can be considered:
 
 ## Related Work
 
+- openshift/svt [cluster-loader](https://github.com/openshift/svt/tree/master/openshift_scalability)
 - [C4-bench](https://github.com/allingeek/c4-bench)
 - [Go-based framework for running benchmarks against Docker, containerd, and runc engine layers](https://github.com/estesp/bucketbench)
 - [1000 nodes and beyond: updates to Kubernetes performance and scalability in 1.2](http://blog.kubernetes.io/2016/03/1000-nodes-and-beyond-updates-to-Kubernetes-performance-and-scalability-in-12.html)
