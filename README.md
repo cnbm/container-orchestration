@@ -8,14 +8,14 @@ The purpose of the Container Orchestration Benchmark (cnbm-cob for short) is to 
 
 - Start <n> container [seconds]
     - Docker Container (prefetched),
-    - UCR/CRYO
-- Stop <n> Container [seconds]
-- Container Distribution over nodes [Map (nodeid -> container)]
+    - UCR/CRI-O
+- Stop <n> container [seconds]
+- Container distribution over nodes [Map (nodeid -> container)]
 - API calls from within cluster [seconds]
-    - List Container 
+    - List containers 
 - Service Discovery [seconds]
-    - Start 1 service, how long until it can be   discovered from different nodes
-    - How long does query take (while scaling services)
+    - Start 1 service, how long until it can be discovered from different nodes
+    - How long does query/look-up take (while scaling services)?
 - recovery performance (in case of re-scheduling)
 
 ### Dimensions
@@ -32,7 +32,7 @@ For each run, the following dimensions can be considered:
 
 ### Flow 
   - User provides a running cluster
-  - Benchmark itself runs in cluster (docker run, marathon json), triggered from local environment
+  - Benchmark itself runs in cluster (Docker run, Marathon spec, K8S spec), triggered from local environment
   - Results are dumped in CSV/JSON       
 
 ## Dependencies
