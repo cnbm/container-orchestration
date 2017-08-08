@@ -13,12 +13,13 @@
 package main
 
 import (
-  "fmt"
-  "io/ioutil"
-  "net/http"
   "crypto/tls"
+  "fmt"
+  "log"
+  "net/http"
+  
 
-  "github.com/tidwall/gjson"
+  marathon "github.com/gambol99/go-marathon"
 )
 
 type scalebench struct {
@@ -38,33 +39,46 @@ func (bench scalebench) execute() (result, error) {
     tr := &http.Transport{
         TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
     }
-    client := &http.Client{Transport: tr}
 
-    header := make(http.Header)
-    header.Set("Authorization", "token="+bench.dcosACSToken)
-  
-    req, _ := http.NewRequest("GET", bench.dcosUrl + "/marathon/v2/apps", nil)
-    req.Header.Add("Authorization", "token="+bench.dcosACSToken)
-
-    res, err := client.Do(req)
-
+    config := marathon.NewDefaultConfig()
+    config.URL = bench.dcosUrl
+    config.DCOSToken = bench.dcosACSToken
+    config.HTTPClient = &http.Client{Transport: tr}
+    client, err := marathon.NewClient(config)
     if err != nil {
-        panic(err)  
-    }
-    defer res.Body.Close()
-
-    bodyBytes, err := ioutil.ReadAll(res.Body)
-    if err != nil {
-        panic(err)
+      log.Fatalf("Failed to create a client for marathon, error: %s", err)
     }
 
-    appsJson := string(bodyBytes)
-    fmt.Println(appsJson)
+    // create
+    // TODO prefetch
+    log.Printf("Deploying a new application")
+    application := marathon.NewDockerApplication().
+        Name("bench").
+        CPU(0.1).
+        Memory(64).
+        Storage(0.0).
+        Count(10).
+        AddArgs("sleep 100000")
 
-    //appName := "/display"
-    instances := gjson.Get(appsJson, `apps.#[id="/display"].instances` ) //|  select(.id == "/display")| .instances
-    
-    fmt.Println("Instances running: ", instances.Int())
+        application.    
+        Container.Docker.Container("ubuntu:xenial").
+        Bridged().
+        Expose(80).
+        Expose(443)
+
+    if _, err := client.CreateApplication(application); err != nil {
+        log.Fatalf("Failed to create application: %s, error: %s", application, err)
+    } else {
+        log.Printf("Created the application: %s", application)
+    }
+
+
+
+    // list applications
+    applicationRunning, err := client.Application("bench")
+
+    fmt.Printf("Found %d instances running", applicationRunning.TasksRunning)
+
 
     return result{},nil
 }
