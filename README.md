@@ -2,17 +2,18 @@
 
 The purpose of the Container Orchestration Benchmark (cnbm-cob for short) is to provide a vendor-neutral, extendable benchmark for container orchestration systems. The current focus is on stateless workloads.
 
-## Setup
+## Benchmark Design and Setup
 
 ### Targets
 
 - Start <n> container [seconds]
-    - Docker Container (prefetched),
-    - UCR/CRI-O
+    - Docker (prefetched)
+    - UCR
+    - CRI-O
 - Stop <n> container [seconds]
 - Container distribution over nodes [Map (nodeid -> container)]
 - API calls from within cluster [seconds]
-    - List containers 
+    - List containers
 - Service Discovery [seconds]
     - Start 1 service, how long until it can be discovered from different nodes
     - How long does query/look-up take (while scaling services)?
@@ -30,15 +31,28 @@ For each run, the following dimensions can be considered:
   - nodes
   - network
 
-### Flow 
+### Flow
   - User provides a running cluster
   - Benchmark itself runs in cluster (Docker run, Marathon spec, K8S spec), triggered from local environment
   - Results are dumped in CSV/JSON       
 
-## Dependencies
+## Development
 
-- [Cobra](https://github.com/spf13/cobra)
-- add here ...
+### Vendoring
+
+We are using Go [dep](https://github.com/golang/dep) for dependency management. If you don't have `dep` installed yet, do `go get -u github.com/golang/dep/cmd/dep` now and then:
+
+```
+$ dep ensure
+```
+
+### Unit tests
+
+For unit tests we use the `go test` command, for example:
+
+```
+$ go test -v -short -run Test* .
+```
 
 ## Related Work
 
