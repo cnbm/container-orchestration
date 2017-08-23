@@ -1,3 +1,5 @@
+// Copyright © 2017 The CNBM contributors
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -13,8 +15,8 @@
 package main
 
 import (
-  "time"
-  "fmt"
+	"fmt"
+	"time"
 )
 
 type result struct {
@@ -27,15 +29,10 @@ type benchmarks interface {
 }
 
 func run(b benchmarks) {
-    b.setup()
-
-    startTime := time.Now()
-    b.execute()
-    elapsed := time.Since(startTime)
-
-    fmt.Println("elapsed %d", elapsed)
-
-    b.teardown()
+	_ = b.setup()
+	startTime := time.Now()
+	_, _ = b.execute()
+	elapsed := time.Since(startTime)
+	fmt.Printf("Elapsed time: %v", elapsed)
+	_ = b.teardown()
 }
-
-

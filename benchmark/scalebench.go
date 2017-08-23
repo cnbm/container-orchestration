@@ -1,3 +1,5 @@
+// Copyright © 2017 The CNBM contributors
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -13,77 +15,76 @@
 package main
 
 import (
-  "crypto/tls"
-  "fmt"
-  "log"
-  "net/http"
-  
+	"crypto/tls"
+	"fmt"
+	"log"
+	"net/http"
 
-  marathon "github.com/gambol99/go-marathon"
+	marathon "github.com/gambol99/go-marathon"
 )
 
 type scalebench struct {
-  dcosUrl, dcosACSToken string 
+	dcosURL, dcosACSToken string
 }
 
 func (bench scalebench) setup() error {
-    fmt.Println("Setup")
+	fmt.Println("Setup")
 
-    return nil
+	return nil
 }
 
 func (bench scalebench) execute() (result, error) {
-    fmt.Println("Execute")
+	fmt.Println("Execute")
 
-    // ingore unsigned cert
-    tr := &http.Transport{
-        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-    }
+	r := result{}
 
-    config := marathon.NewDefaultConfig()
-    config.URL = bench.dcosUrl
-    config.DCOSToken = bench.dcosACSToken
-    config.HTTPClient = &http.Client{Transport: tr}
-    client, err := marathon.NewClient(config)
-    if err != nil {
-      log.Fatalf("Failed to create a client for marathon, error: %s", err)
-    }
+	// ingore unsigned cert
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 
-    // create
-    // TODO prefetch
-    log.Printf("Deploying a new application")
-    application := marathon.NewDockerApplication().
-        Name("bench").
-        CPU(0.1).
-        Memory(64).
-        Storage(0.0).
-        Count(10).
-        AddArgs("sleep 100000")
+	config := marathon.NewDefaultConfig()
+	config.URL = bench.dcosURL
+	config.DCOSToken = bench.dcosACSToken
+	config.HTTPClient = &http.Client{Transport: tr}
+	client, err := marathon.NewClient(config)
+	if err != nil {
+		return r, fmt.Errorf("Failed to create a client for marathon, error: %s", err)
+	}
 
-        application.    
-        Container.Docker.Container("ubuntu:xenial").
-        Bridged().
-        Expose(80).
-        Expose(443)
+	// create
+	// TODO prefetch
+	log.Printf("Deploying a new application")
+	application := marathon.NewDockerApplication().
+		Name("bench").
+		CPU(0.1).
+		Memory(64).
+		Storage(0.0).
+		Count(10).
+		AddArgs("sleep 100000")
 
-    if _, err := client.CreateApplication(application); err != nil {
-        log.Fatalf("Failed to create application: %s, error: %s", application, err)
-    } else {
-        log.Printf("Created the application: %s", application)
-    }
+	application.
+		Container.Docker.Container("ubuntu:xenial").
+		Bridged().
+		Expose(80).
+		Expose(443)
 
+	_, err = client.CreateApplication(application)
+	if err != nil {
+		return r, fmt.Errorf("Failed to create application: %s, error: %s", application, err)
+	}
+	log.Printf("Created the application: %s", application)
 
-
-    // list applications
-    applicationRunning, err := client.Application("bench")
-
-    fmt.Printf("Found %d instances running", applicationRunning.TasksRunning)
-
-
-    return result{},nil
+	// list applications
+	applicationRunning, err := client.Application("bench")
+	if err != nil {
+		return r, fmt.Errorf("Failed to list application: %s", err)
+	}
+	fmt.Printf("Found %d instances running", applicationRunning.TasksRunning)
+	return result{}, nil
 }
 
 func (bench scalebench) teardown() error {
-    fmt.Println("Teardown")
-    return nil
+	fmt.Println("Teardown")
+	return nil
 }
