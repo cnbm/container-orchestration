@@ -1,4 +1,9 @@
+# Global
 .DS_Store
+
+# Go dep management
+vendor/
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
