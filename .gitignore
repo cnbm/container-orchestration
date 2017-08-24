@@ -1,5 +1,6 @@
 # Global
 .DS_Store
+cnbm-co
 
 # Go dep management
 vendor/
