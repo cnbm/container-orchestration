@@ -9,7 +9,7 @@ import (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Displays the CNBM Container Orchestration CLI version",
+	Short: "Displays the CNBM container orchestration CLI version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s\n", releaseVersion)
 	},

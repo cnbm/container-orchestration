@@ -14,8 +14,8 @@ var (
 	// RootCmd represents the cnbm-co root command
 	RootCmd = &cobra.Command{
 		Use:   "cnbm-co",
-		Short: "The CNBM Container Orchestration CLI",
-		Long:  `This is the CNBM Container Orchestration CLI.`,
+		Short: "The CNBM container orchestration CLI",
+		Long:  `This is the CNBM container orchestration CLI tool to launch and evaluate benchmarks.`,
 	}
 )
 
