@@ -37,7 +37,7 @@ Flags:
 
 Global Flags:
       --config string   config file (default is $HOME/.cnbm.yaml)
-
+```
 
 #### DC/OS
 
