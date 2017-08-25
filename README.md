@@ -1,6 +1,6 @@
 # Container Orchestration Benchmark
 
-The purpose of the container orchestration benchmark (`cnbm-co` for short) is to provide a vendor-neutral, extendable benchmark for container orchestration systems. The current focus is on stateless workloads and we're implementing it for the following container orchestration systems:
+The purpose of the container orchestration benchmark (`cnbm-co` for short) is to provide a vendor-neutral, extendable benchmark for container orchestration systems. The current focus is on stateless workloads and we're implementing it for the following container orchestration systems (targets):
 
 - DC/OS
 - Kubernetes
@@ -9,48 +9,28 @@ If you want to contribute, simply fork this repo, add your implementation in `pk
 
 Contents:
 
-- [Benchmark Design](#benchmark-design)
 - [Using a benchmark](#using-a-benchmark)
 - [Developing](#developing)
+- [Benchmark design](#benchmark-design)
 - [Related Work](#related-work)
-
-## Benchmark design
-
-### Targets
-
-- Start <n> container [seconds]
-    - Docker (prefetched)
-    - UCR
-    - CRI-O
-- Stop <n> container [seconds]
-- Container distribution over nodes [Map (nodeid -> container)]
-- API calls from within cluster [seconds]
-    - List containers
-- Service Discovery [seconds]
-    - Start 1 service, how long until it can be discovered from different nodes
-    - How long does query/look-up take (while scaling services)?
-- recovery performance (in case of re-scheduling)
-
-### Dimensions
-
-For each run, the following dimensions can be considered:
-
-- number nodes (hosting containers)
-- number of containers
-- container runtimes (Docker, rkt, UCR, etc.)
-- failure rate
-  - container
-  - nodes
-  - network
-
-### Flow
-  - User provides a running cluster
-  - Benchmark itself runs in cluster (Docker run, Marathon spec, K8S spec), triggered from local environment
-  - Results are dumped in CSV/JSON       
 
 ## Using a benchmark
 
 ```
+$ ./cnbm-co launch -h
+Launches the CNBM container orchestration benchmark
+
+Usage:
+  cnbm-co launch [flags]
+
+Flags:
+  -h, --help            help for launch
+  -p, --params string   Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2
+  -t, --target string   The target container orchestration system to benchmark. Allowed values: [dcos k8s]
+
+Global Flags:
+      --config string   config file (default is $HOME/.cnbm.yaml)
+
 $ ./cnbm-co launch -t dcos -p dcosurl=http://example.com,dcosacstoken=123
 INFO[0000] Setting up DC/OS scale test
 INFO[0000] Executing DC/OS scale test
@@ -83,6 +63,36 @@ For unit tests we use the `go test` command, for example:
 ```
 $ go test -v -short -run Test* .
 ```
+
+## Benchmark design
+
+### Flow
+
+The benchmark is executed as follows:
+
+- User provisions the cluster and provides a running cluster to the benchmark.
+- Benchmark itself runs in the the cluster, triggered by the local `cnbm-co` command.
+- Results are dumped to stdout as CSV/JSON, locally.
+
+### Benchmark run types
+
+- Start `N` containers in `seconds` potentially with different runtimes (Docker, UCR, CRI-O).
+- Stop `N` containers in `seconds`.
+- Container distribution over nodes `map: nodeid -> set of containers`.
+- API calls from within cluster in `seconds`, for example: list containers.
+- Service Discovery in `seconds`:
+  - Start a service and measure how long it takes until it can be discovered from different nodes.
+  - How long does a query/look-up take (while scaling services)?
+- Recovery performance (in case of re-scheduling) in  `seconds`.
+
+### Dimensions
+
+For each benchmark run, the following dimensions should be considered (where applicable):
+
+- Number nodes, that is, worker nodes that are hosting containers
+- Number of containers
+- Container runtime type (Docker, UCR, CRI-O)
+- Failure rate (per container, nodes, network)
 
 ## Related Work
 
