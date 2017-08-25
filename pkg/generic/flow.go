@@ -5,7 +5,7 @@ import (
 )
 
 // Run is the generic benchmark flow
-func Run(b BenchmarkRun) (time.Duration, error) {
+func Run(b BenchmarkRunner) (time.Duration, error) {
 	err := b.Setup()
 	if err != nil {
 		return 0, err

@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	dcos "github.com/cnbm/container-orchestration/pkg/dcos"
+	"github.com/cnbm/container-orchestration/pkg/dcos"
 	"github.com/cnbm/container-orchestration/pkg/generic"
 )
 
@@ -12,20 +15,41 @@ var launchCmd = &cobra.Command{
 	Use:   "launch",
 	Short: "Launches the CNBM container orchestration benchmark",
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("Executing the CNBM container orchestration benchmark")
-		s := dcos.Scalebench{
-			DCOSURL:      "https://joerg-22r-elasticl-mv9wyg0lclf4-218935880.us-west-2.elb.amazonaws.com",
-			DCOSACSToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOiJib290c3RyYXB1c2VyIiwiZXhwIjoxNTAyMDg5NjAyfQ.gMxn7mw7om5tdsBJS6qtDzD6_mUR1ySzNndB0JS2ZiIUGOE6lYDFB2K22uWFi_hqKRg3RPHUdJI47esvY0DlWH20veLSDJEA9vRzg9qPLcKXzrCy_zwF_q1fw_uwkEIdVrmvttHmNEWiW4V1bbDajx9lWDFiKhz7d7p5BHaYvP1ycDhVTjDTBLyBAIC4CAdgFoh1MFocXfNk-SC4yXp68H4v13bTL7jhwjHpgeRWK_c2NH8J53vJUJdOuXqnTqNMKdbZ0D03kx5AlaNdMWpTiAMteschn9ZsdlaeihKLoqvPGPQR-emuOsua0h0njWobqAUhMVcsoere0eJF1_l5dg",
+		t := generic.BenchmarkTarget(cmd.Flag("target").Value.String())
+		configlist := strings.Split(cmd.Flag("config").Value.String(), ",")
+		configmap := map[string]string{}
+		for _, kvraw := range configlist {
+			kv := strings.Trim(kvraw, " ")
+			k := strings.Split(kv, "=")[0]
+			v := strings.Split(kv, "=")[1]
+			configmap[k] = v
 		}
-		elapsed, err := generic.Run(s)
-		if err != nil {
-			log.Errorf("There was a problem carrying out the benchmark: %s", err)
+		switch t {
+		case generic.TargetDCOS:
+			launchDCOS(configmap)
+		case generic.TargetK8S:
+			log.Info("Not implemented yet")
+		default:
+			log.Error("Target unknown, try something else")
 		}
-		log.Info("Elapsed time: %v", elapsed)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(launchCmd)
+	targets := []generic.BenchmarkTarget{generic.TargetDCOS, generic.TargetK8S}
+	launchCmd.PersistentFlags().StringP("target", "t", "", fmt.Sprintf("The target container orchestration system to benchmark. Allowed values: %v", targets))
+	_ = launchCmd.MarkFlagRequired("target")
+	launchCmd.PersistentFlags().StringP("config", "c", "", "A comma separated key-value pair list of target-specific configuration parameters, for example the cluster API and a token: api=http://api.example.com,token=12345")
+	_ = launchCmd.MarkFlagRequired("config")
+}
 
+func launchDCOS(cm map[string]string) {
+	s := dcos.Scalebench{Config: cm}
+	//TODO: check if I got all the necessary DC/OS config parameters: URL ("dcosurl") and ACS token ("dcosacstoken")
+	elapsed, err := generic.Run(s)
+	if err != nil {
+		log.Errorf("There was a problem carrying out the scaling benchmark for DC/OS: %s", err)
+	}
+	log.Info("Elapsed time for the scaling benchmark for DC/OS: %v", elapsed)
 }

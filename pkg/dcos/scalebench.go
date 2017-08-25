@@ -10,16 +10,18 @@ import (
 	marathon "github.com/gambol99/go-marathon"
 )
 
-// Scalebench represents the DC/OS specific benchmark run
+// Scalebench represents the DC/OS specific benchmark run for the scaling benchmark
 type Scalebench struct {
-	DCOSURL, DCOSACSToken string
+	Config map[string]string
 }
 
+// Setup prepares and inits the DC/OS environment for the scaling benchmark
 func (bench Scalebench) Setup() error {
 	log.Info("Setting up DC/OS scale test")
 	return nil
 }
 
+// Execute executes the scaling benchmark against a DC/OS cluster
 func (bench Scalebench) Execute() (generic.Result, error) {
 	log.Info("Executing DC/OS scale test")
 	r := generic.Result{}
@@ -27,8 +29,8 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ingore unsigned cert
 	}
 	config := marathon.NewDefaultConfig()
-	config.URL = bench.DCOSURL
-	config.DCOSToken = bench.DCOSACSToken
+	config.URL = bench.Config["dcosurl"]
+	config.DCOSToken = bench.Config["dcosacstoken"]
 	config.HTTPClient = &http.Client{Transport: tr}
 	client, err := marathon.NewClient(config)
 	if err != nil {
@@ -66,6 +68,7 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 	return generic.Result{}, nil
 }
 
+// Teardown tears down and cleans up the DC/OS environment after the scaling benchmark has executed
 func (bench Scalebench) Teardown() error {
 	log.Info("Tearing down DC/OS scale test")
 	return nil
