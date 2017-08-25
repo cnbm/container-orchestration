@@ -59,5 +59,5 @@ func launchDCOS(cm map[string]string) {
 	if err != nil {
 		log.Errorf("There was a problem carrying out the scaling benchmark for DC/OS: %s", err)
 	}
-	log.Info("Elapsed time for the scaling benchmark for DC/OS: %v", elapsed)
+	log.Infof("Elapsed time for the scaling benchmark for DC/OS: %v", elapsed)
 }
