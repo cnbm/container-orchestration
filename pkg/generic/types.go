@@ -1,5 +1,8 @@
 package generic
 
+// BenchmarkRunType represents a benchmark run type as of https://github.com/cnbm/container-orchestration#benchmark-run-types
+type BenchmarkRunType string
+
 // BenchmarkTarget represents a container orchestration system that is the target of a benchmark run
 type BenchmarkTarget string
 

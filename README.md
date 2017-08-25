@@ -31,9 +31,10 @@ Usage:
   cnbm-co launch [flags]
 
 Flags:
-  -h, --help            help for launch
-  -p, --params string   Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2
-  -t, --target string   The target container orchestration system to benchmark. Allowed values: [dcos kubernetes]
+  -h, --help             help for launch
+  -p, --params string    Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2
+  -r, --runtype string   The benchmark run type. Allowed values: [scaling distribution apicalls servicediscovery recovery]
+  -t, --target string    The target container orchestration system to benchmark. Allowed values: [dcos kubernetes]
 
 Global Flags:
       --config string   config file (default is $HOME/.cnbm.yaml)
@@ -42,7 +43,7 @@ Global Flags:
 #### DC/OS
 
 ```
-$ ./cnbm-co launch -t dcos -p dcosurl=http://example.com,dcosacstoken=123
+$ ./cnbm-co launch --runtype scaling --target dcos -p dcosurl=http://example.com,dcosacstoken=123
 INFO[0000] Setting up DC/OS scaling benchmark
 INFO[0000] Executing DC/OS scaling benchmark
 INFO[0000] Deploying a new application
@@ -55,7 +56,7 @@ INFO[0000] RESULT:
 #### Kubernetes
 
 ```
-./cnbm-co launch -t kubernetes -p ignore=me
+./cnbm-co launch --runtype scaling --target kubernetes --params ignore=me
 INFO[0000] Setting up Kubernetes scaling benchmark
 INFO[0000] Executing Kubernetes scaling benchmark
 INFO[0000] Tearing down Kubernetes scaling benchmark
