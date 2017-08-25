@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -16,9 +17,18 @@ var launchCmd = &cobra.Command{
 	Short: "Launches the CNBM container orchestration benchmark",
 	Run: func(cmd *cobra.Command, args []string) {
 		t := generic.BenchmarkTarget(cmd.Flag("target").Value.String())
-		configlist := strings.Split(cmd.Flag("config").Value.String(), ",")
+		if t == "" {
+			log.Errorf("No target provided, exiting …")
+			os.Exit(1)
+		}
+		paramlistraw := cmd.Flag("params").Value.String()
+		if paramlistraw == "" {
+			log.Error("No configuration parameters for target provided, exiting …")
+			os.Exit(1)
+		}
+		paramlist := strings.Split(paramlistraw, ",")
 		configmap := map[string]string{}
-		for _, kvraw := range configlist {
+		for _, kvraw := range paramlist {
 			kv := strings.Trim(kvraw, " ")
 			k := strings.Split(kv, "=")[0]
 			v := strings.Split(kv, "=")[1]
@@ -38,10 +48,8 @@ var launchCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(launchCmd)
 	targets := []generic.BenchmarkTarget{generic.TargetDCOS, generic.TargetK8S}
-	launchCmd.PersistentFlags().StringP("target", "t", "", fmt.Sprintf("The target container orchestration system to benchmark. Allowed values: %v", targets))
-	_ = launchCmd.MarkFlagRequired("target")
-	launchCmd.PersistentFlags().StringP("config", "c", "", "A comma separated key-value pair list of target-specific configuration parameters, for example the cluster API and a token: api=http://api.example.com,token=12345")
-	_ = launchCmd.MarkFlagRequired("config")
+	launchCmd.Flags().StringP("target", "t", "", fmt.Sprintf("The target container orchestration system to benchmark. Allowed values: %v", targets))
+	launchCmd.Flags().StringP("params", "p", "", "Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2")
 }
 
 func launchDCOS(cm map[string]string) {
