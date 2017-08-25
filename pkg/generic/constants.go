@@ -6,5 +6,5 @@ const (
 	// TargetDCOS represents DC/OS as the target container orchestration system
 	TargetDCOS BenchmarkTarget = "dcos"
 	// TargetK8S represents Kubernetes as the target container orchestration system
-	TargetK8S BenchmarkTarget = "k8s"
+	TargetK8S BenchmarkTarget = "kubernetes"
 )

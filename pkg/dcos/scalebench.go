@@ -17,13 +17,13 @@ type Scalebench struct {
 
 // Setup prepares and inits the DC/OS environment for the scaling benchmark
 func (bench Scalebench) Setup() error {
-	log.Info("Setting up DC/OS scale test")
+	log.Info("Setting up DC/OS scaling benchmark")
 	return nil
 }
 
 // Execute executes the scaling benchmark against a DC/OS cluster
 func (bench Scalebench) Execute() (generic.Result, error) {
-	log.Info("Executing DC/OS scale test")
+	log.Info("Executing DC/OS scaling benchmark")
 	r := generic.Result{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ingore unsigned cert
@@ -70,6 +70,6 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 
 // Teardown tears down and cleans up the DC/OS environment after the scaling benchmark has executed
 func (bench Scalebench) Teardown() error {
-	log.Info("Tearing down DC/OS scale test")
+	log.Info("Tearing down DC/OS scaling benchmark")
 	return nil
 }

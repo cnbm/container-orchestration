@@ -10,12 +10,14 @@ import (
 
 	"github.com/cnbm/container-orchestration/pkg/dcos"
 	"github.com/cnbm/container-orchestration/pkg/generic"
+	"github.com/cnbm/container-orchestration/pkg/kubernetes"
 )
 
 var launchCmd = &cobra.Command{
 	Use:   "launch",
 	Short: "Launches the CNBM container orchestration benchmark",
 	Run: func(cmd *cobra.Command, args []string) {
+		// process and validate flags:
 		t := generic.BenchmarkTarget(cmd.Flag("target").Value.String())
 		if t == "" {
 			log.Errorf("No target provided, exiting …")
@@ -34,14 +36,27 @@ var launchCmd = &cobra.Command{
 			v := strings.Split(kv, "=")[1]
 			configmap[k] = v
 		}
+		// determine target and init accordingly the benchmark(s):
+		var s generic.BenchmarkRunner
+		var targetname string
 		switch t {
 		case generic.TargetDCOS:
-			launchDCOS(configmap)
+			s = dcos.Scalebench{Config: configmap}
+			targetname = "DC/OS"
+			//TODO: check if I got all the necessary DC/OS config parameters such as URL ("dcosurl") and ACS token ("dcosacstoken")
 		case generic.TargetK8S:
-			log.Info("Not implemented yet")
+			s = kubernetes.Scalebench{Config: configmap}
+			targetname = "Kubernetes"
+			//TODO: check if I got all the necessary K8S config parameters
 		default:
 			log.Error("Target unknown, try something else")
 		}
+		// run the parameterized benchmark:
+		elapsed, err := generic.Run(s)
+		if err != nil {
+			log.Errorf("There was a problem carrying out the scaling benchmark for %s: %s", targetname, err)
+		}
+		log.Infof("Elapsed time for the scaling benchmark for %s: %v", targetname, elapsed)
 	},
 }
 
@@ -50,14 +65,4 @@ func init() {
 	targets := []generic.BenchmarkTarget{generic.TargetDCOS, generic.TargetK8S}
 	launchCmd.Flags().StringP("target", "t", "", fmt.Sprintf("The target container orchestration system to benchmark. Allowed values: %v", targets))
 	launchCmd.Flags().StringP("params", "p", "", "Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2")
-}
-
-func launchDCOS(cm map[string]string) {
-	s := dcos.Scalebench{Config: cm}
-	//TODO: check if I got all the necessary DC/OS config parameters: URL ("dcosurl") and ACS token ("dcosacstoken")
-	elapsed, err := generic.Run(s)
-	if err != nil {
-		log.Errorf("There was a problem carrying out the scaling benchmark for DC/OS: %s", err)
-	}
-	log.Infof("Elapsed time for the scaling benchmark for DC/OS: %v", elapsed)
 }
