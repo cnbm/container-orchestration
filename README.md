@@ -5,14 +5,16 @@ The purpose of the container orchestration benchmark (`cnbm-co` for short) is to
 - DC/OS
 - Kubernetes
 
-If you want to contribute, simply fork this repo, add your implementation in `pkg/` and send in a PR.
+If you want to contribute, simply fork this repo, add your implementation in `pkg/` and send in a [PR](https://github.com/cnbm/container-orchestration/pulls).
 
-- [Benchmark Design](#benchmark-design-and-setup)
+Contents:
+
+- [Benchmark Design](#benchmark-design)
 - [Using a benchmark](#using-a-benchmark)
 - [Developing](#developing)
 - [Related Work](#related-work)
 
-## Benchmark Design
+## Benchmark design
 
 ### Targets
 
