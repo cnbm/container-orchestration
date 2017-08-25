@@ -52,11 +52,11 @@ var launchCmd = &cobra.Command{
 			log.Error("Target unknown, try something else")
 		}
 		// run the parameterized benchmark:
-		elapsed, err := generic.Run(s)
+		result, elapsed, err := generic.Run(s)
 		if err != nil {
-			log.Errorf("There was a problem carrying out the scaling benchmark for %s: %s", targetname, err)
+			log.Errorf("Wasn't able to run benchmark for %s: %s", targetname, err)
 		}
-		log.Infof("Elapsed time for the scaling benchmark for %s: %v", targetname, elapsed)
+		log.Infof("RESULT:\n Target: %s\n Output: %s\n Elapsed time: %v", targetname, result, elapsed)
 	},
 }
 

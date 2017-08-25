@@ -21,6 +21,8 @@ Contents:
 
 ### Launching
 
+In general:
+
 ```
 $ ./cnbm-co launch -h
 Launches the CNBM container orchestration benchmark
@@ -36,11 +38,33 @@ Flags:
 Global Flags:
       --config string   config file (default is $HOME/.cnbm.yaml)
 
+
+#### DC/OS
+
+```
 $ ./cnbm-co launch -t dcos -p dcosurl=http://example.com,dcosacstoken=123
-INFO[0000] Setting up DC/OS scale test
-INFO[0000] Executing DC/OS scale test
+INFO[0000] Setting up DC/OS scaling benchmark
+INFO[0000] Executing DC/OS scaling benchmark
 INFO[0000] Deploying a new application
-INFO[0000] Elapsed time for the scaling benchmark for DC/OS: 1s
+INFO[0000] RESULT:
+ Target: DC/OS
+ Output: {}
+ Elapsed time: 0s
+```
+
+#### Kubernetes
+
+```
+./cnbm-co launch -t kubernetes -p ignore=me
+INFO[0000] Setting up Kubernetes scaling benchmark
+INFO[0000] Executing Kubernetes scaling benchmark
+INFO[0000] Tearing down Kubernetes scaling benchmark
+INFO[0000] RESULT:
+ Target: Kubernetes
+ Output: {Client Version: version.Info{Major:"1", Minor:"7", GitVersion:"v1.7.0", GitCommit:"d3ada0119e776222f11ec7945e6d860061339aad", GitTreeState:"clean", BuildDate:"2017-06-30T09:51:01Z", GoVersion:"go1.8.3", Compiler:"gc", Platform:"darwin/amd64"}
+Server Version: version.Info{Major:"1", Minor:"7", GitVersion:"v1.7.2", GitCommit:"922a86cfcd65915a9b2f69f3f193b8907d741d9c", GitTreeState:"clean", BuildDate:"2017-08-11T10:46:12Z", GoVersion:"go1.8.3", Compiler:"gc", Platform:"linux/amd64"}
+}
+ Elapsed time: 106.771022ms
 ```
 
 ### Availability matrix
@@ -94,7 +118,7 @@ The benchmark is executed as follows:
 Supported targets:
 
 - [DC/OS 1.9.2](https://dcos.io/releases/1.9.2/)
-- [Kubernetes 1.7.4](https://github.com/kubernetes/kubernetes/releases/tag/v1.7.4)
+- [Kubernetes 1.7.2](https://github.com/kubernetes/kubernetes/releases/tag/v1.7.2)
 
 ### Benchmark run types
 

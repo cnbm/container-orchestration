@@ -22,9 +22,9 @@ func (bench Scalebench) Setup() error {
 }
 
 // Execute executes the scaling benchmark against a DC/OS cluster
-func (bench Scalebench) Execute() (generic.Result, error) {
+func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	log.Info("Executing DC/OS scaling benchmark")
-	r := generic.Result{}
+	r := generic.BenchmarkResult{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ingore unsigned cert
 	}
@@ -34,7 +34,7 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 	config.HTTPClient = &http.Client{Transport: tr}
 	client, err := marathon.NewClient(config)
 	if err != nil {
-		return r, fmt.Errorf("Failed to create a client for marathon, error: %s", err)
+		return r, fmt.Errorf("Failed to create a client for Marathon: %s", err)
 	}
 	// create
 	// TODO prefetch
@@ -48,14 +48,13 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 		AddArgs("sleep 100000")
 
 	application.
-		Container.Docker.Container("ubuntu:xenial").
+		Container.Docker.Container("busybox").
 		Bridged().
-		Expose(80).
-		Expose(443)
+		Expose(80)
 
 	_, err = client.CreateApplication(application)
 	if err != nil {
-		return r, fmt.Errorf("Failed to create application: %s, error: %s", application, err)
+		return r, fmt.Errorf("Failed to create application %s: %s", application, err)
 	}
 	log.Infof("Created the application: %s", application)
 
@@ -64,8 +63,8 @@ func (bench Scalebench) Execute() (generic.Result, error) {
 	if err != nil {
 		return r, fmt.Errorf("Failed to list application: %s", err)
 	}
-	log.Infof("Found %d instances running", applicationRunning.TasksRunning)
-	return generic.Result{}, nil
+	r.Output = fmt.Sprintf("Found %d instances running", applicationRunning.TasksRunning)
+	return r, nil
 }
 
 // Teardown tears down and cleans up the DC/OS environment after the scaling benchmark has executed

@@ -6,10 +6,11 @@ type BenchmarkTarget string
 // BenchmarkRunner represents a single run of a container orchestration benchmark against a concrete target
 type BenchmarkRunner interface {
 	Setup() error
-	Execute() (Result, error)
+	Execute() (BenchmarkResult, error)
 	Teardown() error
 }
 
-// Result represents the results of a benchmark run
-type Result struct {
+// BenchmarkResult represents the results of a benchmark run
+type BenchmarkResult struct {
+	Output string
 }

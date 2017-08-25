@@ -1,6 +1,9 @@
 package kubernetes
 
 import (
+	"fmt"
+	"os/exec"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/cnbm/container-orchestration/pkg/generic"
 )
@@ -17,10 +20,14 @@ func (bench Scalebench) Setup() error {
 }
 
 // Execute executes the scaling benchmark against a Kubernetes cluster
-func (bench Scalebench) Execute() (generic.Result, error) {
+func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	log.Info("Executing Kubernetes scaling benchmark")
-	r := generic.Result{}
-	// bench.Config["apiserver"]
+	r := generic.BenchmarkResult{}
+	output, err := exec.Command("kubectl", "version").CombinedOutput()
+	if err != nil {
+		return r, fmt.Errorf("Failed to shell out:%s", err)
+	}
+	r.Output = string(output)
 	return r, nil
 }
 
