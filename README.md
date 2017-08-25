@@ -33,7 +33,7 @@ Usage:
 Flags:
   -h, --help            help for launch
   -p, --params string   Comma separated key-value pair list of target-specific configuration parameters. For example: k1=v1,k2=v2
-  -t, --target string   The target container orchestration system to benchmark. Allowed values: [dcos k8s]
+  -t, --target string   The target container orchestration system to benchmark. Allowed values: [dcos kubernetes]
 
 Global Flags:
       --config string   config file (default is $HOME/.cnbm.yaml)
