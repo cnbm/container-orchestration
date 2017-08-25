@@ -1,5 +1,8 @@
 # Container Orchestration Benchmark
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/cnbm/container-orchestration)](https://goreportcard.com/report/github.com/cnbm/container-orchestration)
+[![godoc](https://godoc.org/github.com/cnbm/container-orchestration/pkg?status.svg)](https://godoc.org/github.com/cnbm/container-orchestration/pkg)
+
 The purpose of the container orchestration benchmark (`cnbm-co` for short) is to provide a vendor-neutral, extendable benchmark for container orchestration systems. The current focus is on stateless workloads and we're implementing it for the following container orchestration systems (targets):
 
 - DC/OS
@@ -15,6 +18,8 @@ Contents:
 - [Related Work](#related-work)
 
 ## Using a benchmark
+
+### Launching
 
 ```
 $ ./cnbm-co launch -h
@@ -37,6 +42,18 @@ INFO[0000] Executing DC/OS scale test
 INFO[0000] Deploying a new application
 INFO[0000] Elapsed time for the scaling benchmark for DC/OS: 1s
 ```
+
+### Availability matrix
+
+The following matrix shows the availability of [benchmark run types](#benchmark-run-types) per [target](#targets):
+
+| benchmark run type   | DC/OS    | Kubernetes |
+| --------------------:| -------- | ---------- |
+| `scaling`            | Y        | Y          |
+| `distribution`       | N        | N          |
+| `distribution`       | N        | N          |
+| `apicalls`           | N        | N          |
+| `servicediscovery`   | N        | N          |
 
 ## Developing
 
@@ -66,7 +83,7 @@ $ go test -v -short -run Test* .
 
 ## Benchmark design
 
-### Flow
+### Targets
 
 The benchmark is executed as follows:
 
@@ -74,16 +91,42 @@ The benchmark is executed as follows:
 - Benchmark itself runs in the the cluster, triggered by the local `cnbm-co` command.
 - Results are dumped to stdout as CSV/JSON, locally.
 
+Supported targets:
+
+- [DC/OS 1.9.2](https://dcos.io/releases/1.9.2/)
+- [Kubernetes 1.7.4](https://github.com/kubernetes/kubernetes/releases/tag/v1.7.4)
+
 ### Benchmark run types
 
-- Start `N` containers in `seconds` potentially with different runtimes (Docker, UCR, CRI-O).
-- Stop `N` containers in `seconds`.
-- Container distribution over nodes `map: nodeid -> set of containers`.
-- API calls from within cluster in `seconds`, for example: list containers.
-- Service Discovery in `seconds`:
-  - Start a service and measure how long it takes until it can be discovered from different nodes.
-  - How long does a query/look-up take (while scaling services)?
-- Recovery performance (in case of re-scheduling) in  `seconds`.
+#### `scaling`
+
+The following sequence:
+
+1. Start `N` containers in `seconds` potentially with different runtimes (Docker, UCR, CRI-O).
+1. Stop `N` containers in `seconds`.
+
+#### `distribution`
+
+Launches `N` containers and measures the distribution over nodes in `map: nodeid -> set of containers`.
+
+#### `apicalls`
+
+Measures API calls from within cluster in `seconds`:
+
+- list containers
+- list pods
+- list services/endpoints
+
+#### `servicediscovery`
+
+Measure service discovery in `seconds`:
+
+- Start a service and measure how long it takes until it can be discovered from different nodes.
+- How long does a query/look-up take (while scaling services)?
+
+#### `recovery`
+
+Recovery performance in case of re-scheduling a pod/ (container) in  `seconds`.
 
 ### Dimensions
 
