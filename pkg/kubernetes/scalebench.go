@@ -25,11 +25,6 @@ func (bench Scalebench) Setup() error {
 func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	log.Info("Executing Kubernetes scaling benchmark")
 	r := generic.BenchmarkResult{}
-	// output, err := exec.Command("kubectl", "version").CombinedOutput()
-	// if err != nil {
-	// 	return r, fmt.Errorf("Failed to shell out:%s", err)
-	// }
-	// r.Output = string(output)
 	config, err := clientcmd.BuildConfigFromFlags("", bench.Config["kubeconfig"])
 	if err != nil {
 		return r, fmt.Errorf("Failed to build config for Kubernetes: %s", err)
@@ -38,13 +33,13 @@ func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	if err != nil {
 		return r, fmt.Errorf("Failed to create client for Kubernetes: %s", err)
 	}
-	pods, err := cs.CoreV1().Pods("default").List(metav1.ListOptions{})
+	d, err := cs.ExtensionsV1beta1().Deployments("").List(metav1.ListOptions{})
 	if err != nil {
-		return r, fmt.Errorf("Can't get pods %s", err)
+		return r, fmt.Errorf("Can't get deployments: %s", err)
 	}
-	r.Output = "No pods found"
-	if len(pods.Items) > 0 {
-		r.Output = fmt.Sprintf("Found %d pods", len(pods.Items))
+	r.Output = "No deployments found"
+	if len(d.Items) > 0 {
+		r.Output = fmt.Sprintf("Found %d deployments", len(d.Items))
 	}
 	return r, nil
 }
