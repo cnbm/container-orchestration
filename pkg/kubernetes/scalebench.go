@@ -2,10 +2,12 @@ package kubernetes
 
 import (
 	"fmt"
-	"os/exec"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/cnbm/container-orchestration/pkg/generic"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // Scalebench represents the Kubernetes specific benchmark run for the scaling benchmark
@@ -23,11 +25,27 @@ func (bench Scalebench) Setup() error {
 func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	log.Info("Executing Kubernetes scaling benchmark")
 	r := generic.BenchmarkResult{}
-	output, err := exec.Command("kubectl", "version").CombinedOutput()
+	// output, err := exec.Command("kubectl", "version").CombinedOutput()
+	// if err != nil {
+	// 	return r, fmt.Errorf("Failed to shell out:%s", err)
+	// }
+	// r.Output = string(output)
+	config, err := clientcmd.BuildConfigFromFlags("", bench.Config["kubeconfig"])
 	if err != nil {
-		return r, fmt.Errorf("Failed to shell out:%s", err)
+		return r, fmt.Errorf("Failed to build config for Kubernetes: %s", err)
 	}
-	r.Output = string(output)
+	cs, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return r, fmt.Errorf("Failed to create client for Kubernetes: %s", err)
+	}
+	pods, err := cs.CoreV1().Pods("default").List(metav1.ListOptions{})
+	if err != nil {
+		return r, fmt.Errorf("Can't get pods %s", err)
+	}
+	r.Output = "No pods found"
+	if len(pods.Items) > 0 {
+		r.Output = fmt.Sprintf("Found %d pods", len(pods.Items))
+	}
 	return r, nil
 }
 
