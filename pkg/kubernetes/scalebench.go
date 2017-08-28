@@ -8,9 +8,12 @@ import (
 	"github.com/cnbm/container-orchestration/pkg/generic"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/apps/v1beta1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -42,10 +45,11 @@ func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 		bench.Config["cpu"],
 		bench.Config["mem"],
 	)
-	_, err = cs.AppsV1beta1().Deployments(v1.NamespaceDefault).Create(busybox)
+	d, err := cs.AppsV1beta1().Deployments(v1.NamespaceDefault).Create(busybox)
 	if err != nil {
 		return r, fmt.Errorf("Can't deploy busybox: %s", err)
 	}
+	deploydone(cs, d)
 	r.Output = fmt.Sprintf("%v", busybox)
 	return r, nil
 }
@@ -54,6 +58,31 @@ func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 func (bench Scalebench) Teardown() error {
 	log.Info("Tearing down Kubernetes scaling benchmark")
 	return nil
+}
+
+func deploydone(cs *kubernetes.Clientset, d *v1beta1.Deployment) string {
+	result := ""
+	watch := &cache.ListWatch{
+		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			return cs.AppsV1beta1().Deployments(v1.NamespaceDefault).List(metav1.ListOptions{})
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return cs.AppsV1beta1().Deployments(v1.NamespaceDefault).Watch(metav1.ListOptions{})
+		},
+	}
+	_, _ = cache.NewInformer(
+		watch,
+		&v1beta1.Deployment{},
+		0,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				if resource, ok := obj.(*v1beta1.Deployment); ok {
+					result = fmt.Sprintf("Deployment %s created", resource.Name)
+				}
+			},
+		},
+	)
+	return result
 }
 
 // genbusyboxd creates a deployment with numpods pods and each
