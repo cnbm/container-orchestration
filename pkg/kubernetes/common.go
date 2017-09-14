@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/cnbm/container-orchestration/pkg/generic"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,47 +15,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Scalebench represents the Kubernetes specific benchmark run for the scaling benchmark
-type Scalebench struct {
-	Config map[string]string
-}
-
-// Setup prepares and inits the Kubernetes environment for the scaling benchmark
-func (bench Scalebench) Setup() error {
-	log.Info("Setting up Kubernetes scaling benchmark")
-	return nil
-}
-
-// Execute executes the scaling benchmark against a Kubernetes cluster
-func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
-	log.Info("Executing Kubernetes scaling benchmark")
-	r := generic.BenchmarkResult{}
-	config, err := clientcmd.BuildConfigFromFlags("", bench.Config["kubeconfig"])
+func getclient(confloc string) (*kubernetes.Clientset, error) {
+	cs := &kubernetes.Clientset{}
+	config, err := clientcmd.BuildConfigFromFlags("", confloc)
 	if err != nil {
-		return r, fmt.Errorf("Failed to build config for Kubernetes: %s", err)
+		return cs, fmt.Errorf("Failed to build config for Kubernetes: %s", err)
 	}
-	cs, err := kubernetes.NewForConfig(config)
+	cs, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		return r, fmt.Errorf("Failed to create client for Kubernetes: %s", err)
+		return cs, fmt.Errorf("Failed to create client for Kubernetes: %s", err)
 	}
-	busybox := genbusyboxd(
-		bench.Config["numpods"],
-		bench.Config["cpu"],
-		bench.Config["mem"],
-	)
-	d, err := cs.AppsV1beta1().Deployments(v1.NamespaceDefault).Create(busybox)
-	if err != nil {
-		return r, fmt.Errorf("Can't deploy busybox: %s", err)
-	}
-	deploydone(cs, d)
-	r.Output = fmt.Sprintf("%v", busybox)
-	return r, nil
-}
-
-// Teardown tears down and cleans up the Kubernetes environment after the scaling benchmark has executed
-func (bench Scalebench) Teardown() error {
-	log.Info("Tearing down Kubernetes scaling benchmark")
-	return nil
+	return cs, nil
 }
 
 func deploydone(cs *kubernetes.Clientset, d *v1beta1.Deployment) string {
@@ -92,7 +60,7 @@ func deploydone(cs *kubernetes.Clientset, d *v1beta1.Deployment) string {
 func genbusyboxd(numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
 	return &v1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "bench",
+			Name: "cnbm-co-scaling",
 		},
 		Spec: v1beta1.DeploymentSpec{
 			Replicas: int32Ptr(numpods),
@@ -127,6 +95,8 @@ func genbusyboxd(numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
 	}
 }
 
+// tolimits sets the resources requirements and limits
+// to the respective parameters cpuusagesec and meminbytes
 func tolimits(cpuusagesec, meminbytes string) v1.ResourceRequirements {
 	cpuval, _ := resource.ParseQuantity(cpuusagesec)
 	memval, _ := resource.ParseQuantity(meminbytes)
