@@ -11,18 +11,18 @@ import (
 )
 
 // Scalebench represents the DC/OS specific benchmark run for the scaling benchmark
-type Scalebench struct {
+type Scaling struct {
 	Config map[string]string
 }
 
 // Setup prepares and inits the DC/OS environment for the scaling benchmark
-func (bench Scalebench) Setup() error {
+func (bench Scaling) Setup() error {
 	log.Info("Setting up DC/OS scaling benchmark")
 	return nil
 }
 
 // Execute executes the scaling benchmark against a DC/OS cluster
-func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
+func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 	log.Info("Executing DC/OS scaling benchmark")
 	r := generic.BenchmarkResult{}
 	tr := &http.Transport{
@@ -40,35 +40,35 @@ func (bench Scalebench) Execute() (generic.BenchmarkResult, error) {
 	// TODO prefetch
 	log.Info("Deploying a new application")
 	application := marathon.NewDockerApplication().
-		Name("bench").
+		Name("bench1").
 		CPU(0.1).
 		Memory(64).
 		Storage(0.0).
-		Count(10).
-		AddArgs("sleep 100000")
+		Count(1).
+		AddArgs("/bin/sleep", "100000")
 
 	application.
-		Container.Docker.Container("busybox").
+		Container.Docker.Container("busybox:1").
 		Bridged().
 		Expose(80)
 
-	_, err = client.CreateApplication(application)
+	app, err := client.CreateApplication(application)
 	if err != nil {
 		return r, fmt.Errorf("Failed to create application %s: %s", application, err)
 	}
-	log.Infof("Created the application: %s", application)
+	log.Infof("Creating the application: %s", application)
 
-	// list applications
-	applicationRunning, err := client.Application("bench")
+	// Wait for deployment with no timeout 
+	err = client.WaitOnDeployment(app.Deployments[0]["id"], 0)
 	if err != nil {
 		return r, fmt.Errorf("Failed to list application: %s", err)
 	}
-	r.Output = fmt.Sprintf("Found %d instances running", applicationRunning.TasksRunning)
+	r.Output = fmt.Sprintf("Deployment complete.")
 	return r, nil
 }
 
 // Teardown tears down and cleans up the DC/OS environment after the scaling benchmark has executed
-func (bench Scalebench) Teardown() error {
+func (bench Scaling) Teardown() error {
 	log.Info("Tearing down DC/OS scaling benchmark")
 	return nil
 }

@@ -44,7 +44,7 @@ var launchCmd = &cobra.Command{
 		case generic.TargetDCOS:
 			switch r {
 			case generic.RunScaling:
-				s = dcos.Scalebench{Config: configmap}
+				s = dcos.Scaling{Config: configmap}
 			default:
 				errornexit("Benchmark run type unknown")
 			}
