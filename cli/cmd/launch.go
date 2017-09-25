@@ -58,7 +58,6 @@ var launchCmd = &cobra.Command{
 				errornexit("Benchmark run type unknown")
 			}
 			targetname = "Kubernetes"
-			//TODO: check if I got all the necessary K8S config parameters
 		default:
 			errornexit("Target unknown")
 		}

@@ -59,7 +59,7 @@ INFO[0000] RESULT:
 To benchmark a Kubernetes cluster, use `--target kubernetes`, for example, to launch the `scaling` run type, do:
 
 ```
-$ ./cnbm-co launch --runtype scaling --target kubernetes --params kubeconfig=/Users/mhausenblas/.kube/config,numpods=1,cpu=0.1,mem=67108864
+$ ./cnbm-co launch --runtype scaling --target kubernetes --params kubeconfig=/Users/mhausenblas/.kube/config,ns=cnbm,numpods=1,cpu=50m,mem=300Mi
 INFO[0000] Setting up Kubernetes scaling benchmark
 INFO[0000] Executing Kubernetes scaling benchmark
 INFO[0000] Tearing down Kubernetes scaling benchmark

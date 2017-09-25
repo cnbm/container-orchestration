@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,29 +29,34 @@ func getclient(confloc string) (*kubernetes.Clientset, error) {
 	return cs, nil
 }
 
-func deploydone(cs *kubernetes.Clientset, d *v1beta1.Deployment) string {
-	result := ""
+func deploydone(cs *kubernetes.Clientset, ns string, d *v1beta1.Deployment, done func(i string)) {
 	watch := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return cs.AppsV1beta1().Deployments(v1.NamespaceDefault).List(metav1.ListOptions{})
+			return cs.AppsV1beta1().Deployments(ns).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return cs.AppsV1beta1().Deployments(v1.NamespaceDefault).Watch(metav1.ListOptions{})
+			return cs.AppsV1beta1().Deployments(ns).Watch(metav1.ListOptions{})
 		},
 	}
-	_, _ = cache.NewInformer(
+	stop := make(chan struct{})
+	_, controller := cache.NewInformer(
 		watch,
 		&v1beta1.Deployment{},
-		0,
+		500*time.Millisecond,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				if resource, ok := obj.(*v1beta1.Deployment); ok {
-					result = fmt.Sprintf("Deployment %s created", resource.Name)
+				if r, ok := obj.(*v1beta1.Deployment); ok {
+					// if r.GetName() == "cnbm-co-scaling" && r.Status.AvailableReplicas == 1 {
+					done(r.String())
+					// }
 				}
 			},
 		},
 	)
-	return result
+	go controller.Run(stop)
+	for {
+		time.Sleep(time.Second)
+	}
 }
 
 // genbusyboxd creates a deployment with numpods pods and each
@@ -60,7 +66,8 @@ func deploydone(cs *kubernetes.Clientset, d *v1beta1.Deployment) string {
 func genbusyboxd(numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
 	return &v1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "cnbm-co-scaling",
+			Name:      "cnbm-co-scaling",
+			Namespace: "cnbm",
 		},
 		Spec: v1beta1.DeploymentSpec{
 			Replicas: int32Ptr(numpods),
@@ -79,7 +86,7 @@ func genbusyboxd(numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
 								"sleep",
 								"10000",
 							},
-							Resources: tolimits(meminbytes, cpuusagesec),
+							Resources: tolimits(cpuusagesec, meminbytes),
 							Ports: []v1.ContainerPort{
 								{
 									Name:          "http",
