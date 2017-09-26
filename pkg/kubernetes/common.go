@@ -7,12 +7,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/apps/v1beta1"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -29,33 +26,18 @@ func getclient(confloc string) (*kubernetes.Clientset, error) {
 	return cs, nil
 }
 
-func deploydone(cs *kubernetes.Clientset, ns string, d *v1beta1.Deployment, done func(i string)) {
-	watch := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return cs.AppsV1beta1().Deployments(ns).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return cs.AppsV1beta1().Deployments(ns).Watch(metav1.ListOptions{})
-		},
-	}
-	stop := make(chan struct{})
-	_, controller := cache.NewInformer(
-		watch,
-		&v1beta1.Deployment{},
-		500*time.Millisecond,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				if r, ok := obj.(*v1beta1.Deployment); ok {
-					// if r.GetName() == "cnbm-co-scaling" && r.Status.AvailableReplicas == 1 {
-					done(r.String())
-					// }
-				}
-			},
-		},
-	)
-	go controller.Run(stop)
+func deploydone(cs *kubernetes.Clientset, ns string, dorig *v1beta1.Deployment) {
+	want := dorig.Spec.Replicas
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(100 * time.Millisecond)
+		d, err := cs.AppsV1beta1().Deployments(ns).Get(dorig.GetName(), metav1.GetOptions{})
+		if err != nil {
+			continue
+		}
+		have := d.Status.AvailableReplicas
+		if *want == have {
+			return
+		}
 	}
 }
 

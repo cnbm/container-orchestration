@@ -36,7 +36,7 @@ func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 	if err != nil {
 		return r, fmt.Errorf("Can't create deployment 'cnbm-co-scaling': %s", err)
 	}
-	deploydone(cs, bench.Config["ns"], d, func(i string) { log.Infof("Deployment done: %s", i) })
+	deploydone(cs, bench.Config["ns"], d)
 	r.Output = fmt.Sprintf("%v", busybox)
 	return r, nil
 }
@@ -48,7 +48,17 @@ func (bench Scaling) Teardown() error {
 	if err != nil {
 		return err
 	}
-	err = cs.AppsV1beta1().Deployments(bench.Config["ns"]).Delete("cnbm-co-scaling", &metav1.DeleteOptions{})
+	d, err := cs.AppsV1beta1().Deployments(bench.Config["ns"]).Get("cnbm-co-scaling", metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("Can't get deployment 'cnbm-co-scaling': %s", err)
+	}
+	d.Spec.Replicas = int32Ptr("0")
+	_, err = cs.AppsV1beta1().Deployments(bench.Config["ns"]).Update(d)
+	if err != nil {
+		return fmt.Errorf("Can't scale down deployment 'cnbm-co-scaling': %s", err)
+	}
+	prop := metav1.DeletePropagationForeground
+	err = cs.AppsV1beta1().Deployments(bench.Config["ns"]).Delete("cnbm-co-scaling", &metav1.DeleteOptions{PropagationPolicy: &prop})
 	if err != nil {
 		return fmt.Errorf("Can't delete deployment 'cnbm-co-scaling': %s", err)
 	}
