@@ -77,7 +77,9 @@ Note the following params that are required, depending on the `--runtype`:
   - `numpods` … the number of pods to launch, for example, `10`
   - `cpu` … the CPU seconds (at least `40m`) per pod
   - `mem` … the memory (at least `300Mi`) per pod
-- TBD
+- `servicediscovery`
+  - `kubeconfig` … the Kubernetes config to use, for example `/Users/mhausenblas/.kube/config`
+  - `ns` … the namespace to use, for example `cnbm`
 
 
 ### Availability matrix
