@@ -24,6 +24,7 @@ func (bench ServiceDiscovery) Setup() error {
 	if err != nil {
 		return fmt.Errorf("Can't create pod 'sise': %s", err)
 	}
+	//TODO: wait until pod is up
 	return nil
 }
 
@@ -42,7 +43,7 @@ func (bench ServiceDiscovery) Execute() (generic.BenchmarkResult, error) {
 		return r, fmt.Errorf("Can't create service: %s", err)
 	}
 	_ = s
-	// wait until 'sise.cnbm.svc/info' returns 200:
+	// TODO: wait until 'sise.cnbm.svc/info' returns 200:
 	// svcdone(cs, ns string, s)
 	r.Output = "benchmark succeeded"
 	return r, nil
@@ -51,5 +52,6 @@ func (bench ServiceDiscovery) Execute() (generic.BenchmarkResult, error) {
 // Teardown tears down and cleans up the Kubernetes environment after the servicediscovery benchmark has executed
 func (bench ServiceDiscovery) Teardown() error {
 	log.Info("Tearing down Kubernetes servicediscovery benchmark")
+	// TODO: delete pod, delete svc
 	return nil
 }

@@ -102,6 +102,15 @@ func tolimits(cpuusagesec, meminbytes string) v1.ResourceRequirements {
 
 // gensisep creates a pod using mhausenblas/simpleservice:0.5.0 image
 func gensisep(ns string) *v1.Pod {
+	p := &v1.Probe{
+		Handler: v1.Handler{
+			HTTPGet: &v1.HTTPGetAction{
+				Path: "/health",
+				Port: intstr.FromInt(9876),
+			},
+		},
+	}
+
 	return &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sise",
@@ -118,6 +127,8 @@ func gensisep(ns string) *v1.Pod {
 					Ports: []v1.ContainerPort{
 						{ContainerPort: 9876},
 					},
+					LivenessProbe:  p,
+					ReadinessProbe: p,
 				},
 			},
 		},
