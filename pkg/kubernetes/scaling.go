@@ -37,7 +37,7 @@ func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 		return r, fmt.Errorf("Can't create deployment 'cnbm-co-scaling': %s", err)
 	}
 	deploydone(cs, bench.Config["ns"], d)
-	r.Output = fmt.Sprintf("%v", busybox)
+	r.Output = "benchmark succeeded"
 	return r, nil
 }
 
