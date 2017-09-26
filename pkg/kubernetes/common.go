@@ -7,6 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/apis/apps/v1beta1"
@@ -41,15 +42,15 @@ func deploydone(cs *kubernetes.Clientset, ns string, dorig *v1beta1.Deployment) 
 	}
 }
 
-// genbusyboxd creates a deployment with numpods pods and each
+// genbusyboxd creates a deployment in namespace ns with numpods pods and each
 // with resource constraints (limit==request) which must be at least
 // 1 millicore for cpuusagesec (effectively: "0.001") and
 // 4MB for meminbytes (effectively: "4000000")
-func genbusyboxd(numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
+func genbusyboxd(ns, numpods, cpuusagesec, meminbytes string) *v1beta1.Deployment {
 	return &v1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cnbm-co-scaling",
-			Namespace: "cnbm",
+			Namespace: ns,
 		},
 		Spec: v1beta1.DeploymentSpec{
 			Replicas: int32Ptr(numpods),
@@ -96,6 +97,48 @@ func tolimits(cpuusagesec, meminbytes string) v1.ResourceRequirements {
 	return v1.ResourceRequirements{
 		Limits:   newlim,
 		Requests: newlim,
+	}
+}
+
+// gensisep creates a pod using mhausenblas/simpleservice:0.5.0 image
+func gensisep(ns string) *v1.Pod {
+	return &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "sise",
+			Namespace: ns,
+			Labels: map[string]string{
+				"app": "cnbm-co",
+			},
+		},
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
+				{
+					Name:  "sise",
+					Image: "mhausenblas/simpleservice:0.5.0",
+					Ports: []v1.ContainerPort{
+						{ContainerPort: 9876},
+					},
+				},
+			},
+		},
+	}
+}
+
+// gensises creates a service using app=cnbm-co selector
+func gensises(ns string) *v1.Service {
+	return &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "sise",
+			Namespace: ns,
+		},
+		Spec: v1.ServiceSpec{
+			Ports: []v1.ServicePort{
+				{Port: 80, TargetPort: intstr.FromInt(9876)},
+			},
+			Selector: map[string]string{
+				"app": "cnbm-co",
+			},
+		},
 	}
 }
 

@@ -28,6 +28,7 @@ func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 		return r, err
 	}
 	busybox := genbusyboxd(
+		bench.Config["ns"],
 		bench.Config["numpods"],
 		bench.Config["cpu"],
 		bench.Config["mem"],

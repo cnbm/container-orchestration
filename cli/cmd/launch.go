@@ -54,6 +54,8 @@ var launchCmd = &cobra.Command{
 			switch r {
 			case generic.RunScaling:
 				s = kubernetes.Scaling{Config: configmap}
+			case generic.RunSD:
+				s = kubernetes.ServiceDiscovery{Config: configmap}
 			default:
 				errornexit("Benchmark run type unknown")
 			}
