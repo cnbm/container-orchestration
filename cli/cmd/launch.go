@@ -45,6 +45,13 @@ var launchCmd = &cobra.Command{
 			switch r {
 			case generic.RunScaling:
 				s = dcos.Scaling{Config: configmap}
+			case generic.RunSD:
+				s = dcos.ServiceDiscovery{Config: configmap}
+			case generic.RunAPICalls:
+				s = dcos.ApiCall{Config: configmap}
+			case generic.RunDistribution:
+				s = dcos.Distribution{Config: configmap}
+			case generic.RunRecovery:
 			default:
 				errornexit("Benchmark run type unknown")
 			}

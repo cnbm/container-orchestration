@@ -11,19 +11,19 @@ import (
 )
 
 // Scalebench represents the DC/OS specific benchmark run for the scaling benchmark
-type Scaling struct {
+type ServiceDiscovery struct {
 	Config map[string]string
 }
 
 // Setup prepares and inits the DC/OS environment for the scaling benchmark
-func (bench Scaling) Setup() error {
-	log.Info("Setting up DC/OS scaling benchmark")
+func (bench ServiceDiscovery) Setup() error {
+	log.Info("Setting up DC/OS ServiceDiscovery benchmark")
 	return nil
 }
 
-// Execute executes the scaling benchmark against a DC/OS cluster
-func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
-	log.Info("Executing DC/OS scaling benchmark")
+// Execute executes the distrubution benchmark against a DC/OS cluster
+func (bench ServiceDiscovery) Execute() (generic.BenchmarkResult, error) {
+	log.Info("Executing DC/OS ServiceDiscovery benchmark")
 	r := generic.BenchmarkResult{}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ingore unsigned cert
@@ -49,7 +49,7 @@ func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 
 	application.
 		Container.Docker.Container("busybox:1").
-		Host().
+		Bridged().
 		Expose(80)
 
 	app, err := client.CreateApplication(application)
@@ -67,9 +67,9 @@ func (bench Scaling) Execute() (generic.BenchmarkResult, error) {
 	return r, nil
 }
 
-// Teardown tears down and cleans up the DC/OS environment after the scaling benchmark has executed
-func (bench Scaling) Teardown() error {
-	log.Info("Tearing down DC/OS scaling benchmark")
+// Teardown tears down and cleans up the DC/OS environment after the distribution benchmark has executed
+func (bench ServiceDiscovery) Teardown() error {
+	log.Info("Tearing down DC/OS ServiceDiscovery benchmark")
 	tr := &http.Transport{
 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ingore unsigned cert
 	}
