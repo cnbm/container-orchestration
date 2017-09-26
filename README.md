@@ -59,23 +59,34 @@ INFO[0000] RESULT:
 To benchmark a Kubernetes cluster, use `--target kubernetes`, for example, to launch the `scaling` run type, do:
 
 ```
-$ ./cnbm-co launch --runtype scaling --target kubernetes --params kubeconfig=/Users/mhausenblas/.kube/config,ns=cnbm,numpods=1,cpu=50m,mem=300Mi
+$ ./cnbm-co launch --runtype scaling --target kubernetes --params kubeconfig=/Users/mhausenblas/.kube/config,ns=cnbm,numpods=3,cpu=50m,mem=300Mi
+
 INFO[0000] Setting up Kubernetes scaling benchmark
 INFO[0000] Executing Kubernetes scaling benchmark
 INFO[0000] Tearing down Kubernetes scaling benchmark
 INFO[0000] RESULT:
- Target: Kubernetes
- Output: {}
- Elapsed time: 17.206911ms
+Target: Kubernetes
+ Output: {&Deployment{ObjectMeta:k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta{Name:cnbm-co-scaling,GenerateName:,Namespace:cnbm,SelfLink:,UID:,ResourceVersion:,Generation:0,CreationTimestamp:0001-01-01
+ 00:00:00 +0000 UTC,DeletionTimestamp:<nil>,DeletionGracePeriodSeconds:nil,Labels:map[string]string{},Annotations:map[string]string{},OwnerReferences:[],Finalizers:[],ClusterName:,Initializers:nil,},Spec:
+DeploymentSpec{Replicas:*3,Selector:nil,Template:k8s_io_kubernetes_pkg_api_v1.PodTemplateSpec{ObjectMeta:k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta{Name:,GenerateName:,Namespace:,SelfLink:,UID:,Resou
+rceVersion:,Generation:0,CreationTimestamp:0001-01-01 00:00:00 +0000 UTC,DeletionTimestamp:<nil>,DeletionGracePeriodSeconds:nil,Labels:map[string]string{app: cnbm-co,},Annotations:map[string]string{},Owne
+rReferences:[],Finalizers:[],ClusterName:,Initializers:nil,},Spec:PodSpec{Volumes:[],Containers:[{busybox busybox [sleep 10000] []  [{http 0 80 TCP }] [] [] {map[memory:{{314572800 0} {<nil>} 300Mi Binary
+SI} cpu:{{50 -3} {<nil>} 50m DecimalSI}] map[cpu:{{50 -3} {<nil>} 50m DecimalSI} memory:{{314572800 0} {<nil>} 300Mi BinarySI}]} [] nil nil nil    nil false false false}],RestartPolicy:,TerminationGracePe
+riodSeconds:nil,ActiveDeadlineSeconds:nil,DNSPolicy:,NodeSelector:map[string]string{},ServiceAccountName:,DeprecatedServiceAccount:,NodeName:,HostNetwork:false,HostPID:false,HostIPC:false,SecurityContext:
+nil,ImagePullSecrets:[],Hostname:,Subdomain:,Affinity:nil,SchedulerName:,InitContainers:[],AutomountServiceAccountToken:nil,Tolerations:[],HostAliases:[],},},Strategy:DeploymentStrategy{Type:,RollingUpdat
+e:nil,},MinReadySeconds:0,RevisionHistoryLimit:nil,Paused:false,RollbackTo:nil,ProgressDeadlineSeconds:nil,},Status:DeploymentStatus{ObservedGeneration:0,Replicas:0,UpdatedReplicas:0,AvailableReplicas:0,U
+navailableReplicas:0,Conditions:[],ReadyReplicas:0,CollisionCount:nil,},}}
+ Elapsed time: 9.288424878s
 ```
 
 Note the following params that are required, depending on the `--runtype`:
 
 - `scaling`
   - `kubeconfig` … the Kubernetes config to use, for example `/Users/mhausenblas/.kube/config`
+  - `ns` … the namespace to use, for example `cnbm`
   - `numpods` … the number of pods to launch, for example, `10`
-  - `cpu` … the CPU seconds (at least `0.01`) per pod
-  - `mem` … the memory (at least `4000000`) per pod
+  - `cpu` … the CPU seconds (at least `40m`) per pod
+  - `mem` … the memory (at least `300Mi`) per pod
 - TBD
 
 
