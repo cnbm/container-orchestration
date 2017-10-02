@@ -19,7 +19,7 @@ Supported targets at the moment are:
 
 ## Benchmark run types
 
-The CNBM-CO benchmark is composed of a number of micro-benchmarks, called *benchmark run types* (or simply run types) which are covering different areas.
+The CNBM-CO benchmark is composed of a number of micro-benchmarks, called *benchmark run types* (or simply run types) which are covering different areas. See [here](https://github.com/cnbm/container-orchestration/blob/master/pkg/generic/constants.go#L14) for a more formal definition.
 
 ### `scaling`
 
